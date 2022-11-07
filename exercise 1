@@ -162,13 +162,10 @@ group by 1, 2
 order by 3 desc, 1
 
 -- soal no 13
-WITH CTE_proportion as
-(select country, count(distinct company_id) total_company, 
+select country, count(distinct company_id) total_company, 
 count(distinct company_id)/sum(count(distinct company_id)) over () proportion
 from unicorn_companies
 group by country
-order by 2 desc)
-
-select *
-from cte_proportion
+order by 2 desc
 limit 5
+
