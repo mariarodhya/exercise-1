@@ -1,0 +1,174 @@
+-- soal no 1
+-- Jawaban: North America
+
+select continent, count(distinct company_id)
+from unicorn_companies
+group by continent
+order by count desc
+
+-- soal no 2
+-- Jawaban: United States & China
+
+select country, count(company)
+from unicorn_companies
+group by country
+having count(company) > 100
+order by count desc
+
+-- soal no 3
+-- Jawaban: Fintech, 3937500000.00000000
+
+select industry, sum(funding) total_fund, avg(valuation) avg_val
+from unicorn_industries ind
+full outer join unicorn_funding fun
+on ind.company_id = fun.company_id
+group by industry
+order by sum(funding) desc
+
+-- soal no 4
+
+select extract(year from date_joined) as year, count(extract(year from date_joined)) total_company_joined
+from unicorn_industries ind
+full outer join unicorn_funding fun
+on ind.company_id = fun.company_id
+full outer join unicorn_dates dat
+on ind.company_id = dat.company_id
+where lower(industry) like '%fintech%'
+group by 1
+having extract(year from date_joined) between 2016 and 2022
+order by 1
+
+-- soal no 5
+-- Jawaban 
+
+select company, city, country, continent, industry, valuation
+from unicorn_industries ind
+full outer join unicorn_funding fun
+on ind.company_id = fun.company_id
+full outer join unicorn_companies com
+on ind.company_id = com.company_id
+order by valuation desc
+
+select company, city, country, continent, industry, valuation
+from unicorn_industries ind
+full outer join unicorn_funding fun
+on ind.company_id = fun.company_id
+full outer join unicorn_companies com
+on ind.company_id = com.company_id
+where lower(country) like '%indonesia%'
+order by valuation desc
+
+-- soal no 6
+-- Jawaban Otto Bock HealthCare, Germany.
+
+select company, country, extract(year from date_joined) - year_founded age
+from unicorn_companies com
+full outer join unicorn_dates dat
+on com.company_id = dat.company_id
+order by 3 desc
+
+-- soal no 7
+-- Jawaban: Five Star Business Finance, India, 37. Promasidor Holdings, South Africa, 37
+
+select company, country, extract(year from date_joined) - year_founded age
+from unicorn_companies com
+full outer join unicorn_dates dat
+on com.company_id = dat.company_id
+where year_founded between 1960 and 2000
+order by 3 desc
+
+-- soal no 8 
+-- Jawaban: 603, 611, 398
+
+select count
+(distinct case
+ when lower(select_investors) like '%venture%' then company_id
+end) total_company_with_venture_investors
+from unicorn_funding
+
+select count
+(distinct case
+ when lower(select_investors) like '%capital%' then company_id
+end) total_company_with_venture_investors
+from unicorn_funding
+
+select count
+(distinct case
+ when lower(select_investors) like '%partner%' then company_id
+end) total_company_with_venture_investors
+from unicorn_funding
+
+-- soal no 9
+select count(distinct
+case
+	when lower(industry) like '%logistics%' and lower(continent) like '%asia%' then com.company_id
+end)
+from unicorn_companies com
+full outer join unicorn_industries ind
+on com.company_id = ind.company_id
+
+select count(distinct
+case
+	when lower(industry) like '%logistics%' and lower(country) like '%indonesia%' then com.company_id
+end)
+from unicorn_companies com
+full outer join unicorn_industries ind
+on com.company_id = ind.company_id
+
+-- soal no 10
+
+-- cari 3 negara di asia dengan unicorn terbanyak
+select country, count(company) total_company
+from unicorn_companies com
+full outer join unicorn_industries ind
+on com.company_id = ind.company_id
+where lower(Continent) like '%asia%'
+group by country
+order by 2 desc
+
+-- tidak termasuk 3 negara dg unicorn terbanyak
+with cte_asia_without_big3 as
+(select industry, count(company) total_company, country
+from unicorn_companies com
+full outer join unicorn_industries ind
+on com.company_id = ind.company_id
+where lower(Continent) like '%asia%' 
+group by industry, country
+order by 2 desc)
+
+select * from cte_asia_without_big3
+where country not in ('China', 'India', 'Israel')
+order by industry, total_company desc, country
+
+-- soal no 11 
+select distinct(industry) industry_not_in_India
+from unicorn_companies com
+full outer join unicorn_industries ind
+on com.company_id = ind.company_id
+where country != 'India'
+order by 1
+
+- soal no 12
+select distinct industry, extract(year from date_joined) year_joined, count(company) total_company, 
+avg(valuation) avg_valuation
+from unicorn_dates dat
+full outer join unicorn_industries ind
+on dat.company_id = ind.company_id
+full outer join unicorn_funding fun
+on dat.company_id = fun.company_id
+full outer join unicorn_companies com
+on dat.company_id = com.company_id
+group by 1, 2
+order by 3 desc, 1
+
+-- soal no 13
+WITH CTE_proportion as
+(select country, count(distinct company_id) total_company, 
+count(distinct company_id)/sum(count(distinct company_id)) over () proportion
+from unicorn_companies
+group by country
+order by 2 desc)
+
+select *
+from cte_proportion
+limit 5
